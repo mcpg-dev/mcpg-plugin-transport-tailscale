@@ -47,9 +47,13 @@ fn main() {
     let go = env::var("GO").unwrap_or_else(|_| "go".into());
     let mut cmd = Command::new(&go);
     cmd.current_dir(manifest.join("tsshim"))
+        // -buildvcs=false: the archive needs no VCS stamp, and git refuses a
+        // checkout owned by another user (a build container's mounted
+        // tree), which would fail the build.
         .args([
             "build",
             "-buildmode=c-archive",
+            "-buildvcs=false",
             "-trimpath",
             "-tags",
             tags,
