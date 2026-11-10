@@ -1,6 +1,6 @@
 [package]
 name = "mcpg-plugin-transport-tailscale"
-version = "0.1.0-rc.2"
+version = "0.1.0-rc.4"
 license = "Apache-2.0"
 edition = "2024"
 description = "Tailscale transport plugin (dev.mcpg.transport.tailscale): the gateway joins a tailnet as its own node and names each caller by their tailnet identity"
@@ -25,7 +25,7 @@ test-control = []
 [dependencies]
 mcpg-plugin-protocol = { git = "https://github.com/mcpg-dev/mcpg-plugin-protocol", tag = "v0.1.0-rc.8", version = "=0.1.0-rc.8" }
 mcpg-plugin-sdk = { git = "https://github.com/mcpg-dev/mcpg-plugin-sdk", tag = "v0.1.0-rc.13", version = "=0.1.0-rc.13" }
-mcpg-plugin-http-ingress = { git = "https://github.com/mcpg-dev/mcpg-plugin-http-ingress", tag = "v0.1.0-rc.2", version = "=0.1.0-rc.2" }
+mcpg-plugin-http-ingress = { git = "https://github.com/mcpg-dev/mcpg-plugin-http-ingress", tag = "v0.1.0-rc.4", version = "=0.1.0-rc.4" }
 libc = "0.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
