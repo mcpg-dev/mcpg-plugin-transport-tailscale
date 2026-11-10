@@ -1,0 +1,25 @@
+schema: mcpg.dev/plugin/v1
+id: dev.mcpg.transport.tailscale
+name: Tailscale Transport
+license: Apache-2.0
+description: |
+  Joins the gateway to a tailnet as its own Tailscale node (embedded tsnet,
+  no tailscaled) and serves it there: HTTPS with the node's tailnet
+  certificate, or plain HTTP, and optionally the public internet through
+  Funnel. Every request goes to the gateway's own HTTP router. For each
+  tailnet connection the plugin asks the node who owns the peer and attests
+  that identity — a user's login, or a tagged device's node name — so a
+  caller on the tailnet is authenticated with no token; the roles, groups
+  and scopes of an app capability the tailnet policy grants become the
+  caller's, and `require_capability` refuses devices without it. The node
+  authenticates with an auth key, an OAuth client secret with tags, or
+  workload identity federation, against Tailscale or Headscale; it can be
+  ephemeral; log upload to Tailscale is off unless enabled. Funnel callers
+  come from the internet and carry no identity. Linux (glibc) and macOS
+  only.
+class: transport
+runtime: native-cdylib-v1
+protocol_version: "1.0"
+required_capabilities:
+  - network_outbound
+  - transport_listen

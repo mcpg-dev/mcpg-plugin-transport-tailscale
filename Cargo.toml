@@ -1,0 +1,41 @@
+[package]
+name = "mcpg-plugin-transport-tailscale"
+version = "0.1.0-rc.2"
+license = "Apache-2.0"
+edition = "2024"
+description = "Tailscale transport plugin (dev.mcpg.transport.tailscale): the gateway joins a tailnet as its own node and names each caller by their tailnet identity"
+build = "build.rs"
+include = ["src/**", "tsshim/**", "build.rs", "plugin.yaml", "README.md", "LICENSE"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["cdylib-export"]
+# Gates the `mcpg_plugin_register` export, so the crate can also link as an
+# rlib (its own tests) without a duplicate symbol.
+cdylib-export = []
+# Declared so `declare_plugin!`'s `register_static` gate does not trigger
+# `unexpected_cfgs`. Empty: `transport` has no static-firstparty path.
+static-firstparty = []
+# Links the shim's test build (an in-process control server and an outbound
+# dial) instead of the shipped one, for this crate's tailnet tests.
+test-control = []
+
+[dependencies]
+mcpg-plugin-protocol = { git = "https://github.com/mcpg-dev/mcpg-plugin-protocol", tag = "v0.1.0-rc.8", version = "=0.1.0-rc.8" }
+mcpg-plugin-sdk = { git = "https://github.com/mcpg-dev/mcpg-plugin-sdk", tag = "v0.1.0-rc.13", version = "=0.1.0-rc.13" }
+mcpg-plugin-http-ingress = { git = "https://github.com/mcpg-dev/mcpg-plugin-http-ingress", tag = "v0.1.0-rc.2", version = "=0.1.0-rc.2" }
+libc = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "macros", "sync"] }
+tokio-util = { version = "0.7", features = ["rt"] }
+tracing = "0.1"
+
+[dev-dependencies]
+bytes = "1"
+http-body-util = "0.1"
+hyper = { version = "1", features = ["client", "http1"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+tempfile = "3"
