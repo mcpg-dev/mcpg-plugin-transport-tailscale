@@ -4,8 +4,7 @@ A **transport** plugin that joins the gateway to a tailnet as its own
 Tailscale node. The node is embedded (Tailscale's `tsnet`), so the machine
 needs no `tailscaled`, no inbound port and no public IP.
 
-It is an `http`-wire transport: it hands every HTTP request to the gateway's
-own router. For each tailnet connection it also asks the node **who owns the
+The plugin hands every HTTP request to the gateway's own router. For each tailnet connection it also asks the node **who owns the
 peer** and attests that identity on every request of the connection. A caller
 on the tailnet is then authenticated with no token.
 
@@ -131,7 +130,11 @@ governance:
   uses as its public address for webhook callbacks. Without Funnel,
   `tailnet:https://<name>`, which is not a public address.
 - **Replicas:** each replica is its own node with its own `state_dir` and
-  `hostname`. Clients on the `2025-11-25` wire keep a session on one node.
+  `hostname`. MCP `2026-07-28` is stateless, so any node answers a
+  self-contained request. State that outlives one request (a task, a call
+  that waits for input, a `subscriptions/listen` stream) stays on the node
+  that made it. Another node can use that state only when the replicas run
+  in cluster mode with one shared `cluster.state_encryption_key_env`.
 - **Building from source** needs Go (the version in `tsshim/go.mod`); the
   crate's build script builds the node as a C archive.
 

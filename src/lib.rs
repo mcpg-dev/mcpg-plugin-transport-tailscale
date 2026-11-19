@@ -1,7 +1,7 @@
 //! `dev.mcpg.transport.tailscale` — the gateway joins a tailnet as its own
 //! node.
 //!
-//! An `http`-wire transport: the plugin embeds a Tailscale node (tsnet,
+//! The plugin embeds a Tailscale node (tsnet,
 //! through the Go shim in `tsshim/`), listens on the tailnet (HTTPS with the
 //! node's certificate, or plain HTTP) and optionally on the public internet
 //! through Funnel, and hands every request to the gateway's own router.
@@ -23,12 +23,10 @@ use std::thread::JoinHandle;
 use std::time::Duration;
 
 use mcpg_plugin_http_ingress::{Connection, serve_connection};
-use mcpg_plugin_protocol::transport::{TransportError, TransportWire};
+use mcpg_plugin_protocol::transport::TransportError;
 use mcpg_plugin_protocol::{PluginClass, PluginManifest};
 use mcpg_plugin_sdk::declare_plugin;
-use mcpg_plugin_sdk::ffi::{
-    SyncMessageDispatcher, SyncTransport, SyncTransportHandle, WatchHandleBox,
-};
+use mcpg_plugin_sdk::ffi::{SyncTransport, SyncTransportHandle, WatchHandleBox};
 use mcpg_plugin_sdk::http_ingress::HttpIngressServer;
 use serde::Deserialize;
 use tokio::runtime::Runtime;
@@ -181,20 +179,6 @@ impl SyncTransport for TailscaleTransport {
 
     fn name(&self) -> &str {
         "tailscale-v1"
-    }
-
-    fn wire(&self) -> TransportWire {
-        TransportWire::Http
-    }
-
-    fn start(
-        &self,
-        _listener_config: &serde_json::Value,
-        _dispatcher: Arc<dyn SyncMessageDispatcher>,
-    ) -> Result<SyncTransportHandle, TransportError> {
-        Err(TransportError::InvalidConfig {
-            message: format!("{PLUGIN_ID} hands the gateway HTTP requests, not JSON-RPC messages"),
-        })
     }
 
     fn start_http(
@@ -576,15 +560,6 @@ mod tests {
     }
 
     #[test]
-    fn it_is_an_http_wire_transport_and_refuses_the_messages_wire() {
-        let plugin = TailscaleTransport::new("{}");
-        assert_eq!(plugin.wire(), TransportWire::Http);
-        let dispatcher: Arc<dyn SyncMessageDispatcher> = Arc::new(NoDispatch);
-        let err = plugin.start(&json!({}), dispatcher).err().unwrap();
-        assert!(matches!(err, TransportError::InvalidConfig { .. }));
-    }
-
-    #[test]
     fn a_bad_config_is_refused_before_the_node_starts() {
         let plugin = TailscaleTransport::new("{}");
         let err = plugin.start_http(&json!({}), never_server()).err().unwrap();
@@ -592,17 +567,6 @@ mod tests {
             panic!("expected InvalidConfig");
         };
         assert!(message.contains("state_dir"), "{message}");
-    }
-
-    struct NoDispatch;
-    impl SyncMessageDispatcher for NoDispatch {
-        fn dispatch(
-            &self,
-            _session_id: &str,
-            _message: &[u8],
-        ) -> Result<Vec<u8>, mcpg_plugin_protocol::transport::DispatcherError> {
-            unreachable!()
-        }
     }
 
     fn never_server() -> HttpIngressServer {
